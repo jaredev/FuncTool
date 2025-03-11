@@ -18,10 +18,17 @@ final class FuncToolTests: XCTestCase {
         #if canImport(FuncToolMacros)
         assertMacroExpansion(
             """
-            #stringify(a + b)
+            func add(a: Int, b: Int) -> Int { return a + b }
+            #tool(add(a:b:)
             """,
             expandedSource: """
-            (a + b, "a + b")
+            FuncToolBase(name:"add", parameters: [] description: "FIXME", exec: (_ toolCallArgs: [Any]) -> String 
+                {
+                    // @TODO: Check number of argument sinput matches!
+                    let result = add(a:toolCallArgs[0], b:toolCallArgs[1])
+                    return "Observation: the tool add returned: \\(result)"
+                }
+            )
             """,
             macros: testMacros
         )
