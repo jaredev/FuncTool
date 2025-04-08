@@ -7,7 +7,7 @@ This proof of concept shows that it is possible to get at least some of this fun
 
 ## Basic Usage
 
-```
+```swift
 // Basic Usage. A function to use as a tool by an AI agent
 func getWeather(at: String) { ... }
 
@@ -34,7 +34,7 @@ A FuncTool object can be invoked with the `call` method. The `#tool()` macro wra
 
 The underlying macro does something similar to
 
-```
+```swift
     // For n parameters
     let result = wrappedFunction(param: .init(stringParam[0]) ?? .init())
 ```
@@ -43,7 +43,7 @@ So be aware that this has its limitation if the parameter is not convertible or 
 
 To call a `FuncTool` object's underlying function use `exec`. `exec()` expects an array of Strings and that the number of parameters match. 
 
-```   
+```swift   
 let result = weatherTool.exec(["Seattle, WA"]) // calls getWeather(at:"Seattle, WA")
 ```
 
@@ -51,7 +51,7 @@ let result = weatherTool.exec(["Seattle, WA"]) // calls getWeather(at:"Seattle, 
 
 To simplify the process of calling a variable assortment of tools from an AI Agent in MLX, the `ToolRegistry` struct holds a collection of `FuncTool` instances which can be called by name if the agent requests a tool call from the LLM. Multiple tools can be inline added to the registry but also appended later. Be aware that these are keyed in a dictionary by name so avoid using the name for multiple functions (including overloads).
 
-```
+```swift
     func add(a: Int = 1, b: Int = -1) -> Int
     {
         return a + b
