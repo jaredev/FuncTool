@@ -1,9 +1,9 @@
 # FuncTool
 ---
 
-FuncTool is a tool for Large Language Model tool calling to native functions in (Swift)[https://github.com/SwiftLang]. It was designed as a proof of concept of a `#tool()` macro similar to the `@tool()` macros for other LLM and agentic libraries in Python which automatically extract details about a function for the tool spec for an AI Agent.
+FuncTool is a tool for Large Language Model tool calling to native functions in [Swift](https://github.com/SwiftLang). It was designed as a proof of concept of a `#tool()` macro similar to the `@tool()` macros for other LLM and agentic libraries in Python which automatically extract details about a function for the tool spec for an AI Agent.
 
-This proof of concept shows that it is possible to get at least some of this functionality going in native Swift and generate the `ToolSpec` which is used by (Apple's MLX library)[https://github.com/ml-explore/mlx] for on device inference.
+This proof of concept shows that it is possible to get at least some of this functionality going in native Swift and generate the `ToolSpec` which is used by [Apple's MLX library](https://github.com/ml-explore/mlx) for on device inference.
 
 ## Basic Usage
 
