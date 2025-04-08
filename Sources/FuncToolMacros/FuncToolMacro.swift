@@ -1,3 +1,4 @@
+// MIT License. Copyright Charles Jared Jetsel 2025
 import SwiftCompilerPlugin
 import SwiftSyntax
 import SwiftSyntaxBuilder
@@ -24,73 +25,7 @@ public struct StringifyMacro: ExpressionMacro
     }
 }
 
-public struct CallToolMacro: ExpressionMacro
-{
-    public static func expansion(of node: some FreestandingMacroExpansionSyntax, in context: some MacroExpansionContext) -> ExprSyntax
-    {
-        guard let argument = node.arguments.first?.expression else
-        {
-            fatalError("compiler bug: the macro does not have any arguments")
-        }
-
-        return "\(literal: argument.description)"
-    }
-}
-// @TODO: Remove. Nope, can't introduce struct before/after an attached function in swift macros.
-public struct FuncToolMacroAlt: PeerMacro
-{
-    public static func expansion(of node: AttributeSyntax, providingPeersOf declaration: some DeclSyntaxProtocol, in context: some MacroExpansionContext) throws -> [DeclSyntax]
-    {
-        guard let funcDecl = declaration.as(FunctionDeclSyntax.self) else
-        {
-            fatalError("Error: The macro @FuncName can only be used with functions")
-        }
-        
-        typealias Param = (String, String, Bool) // name, type, isRequired
-        let name = funcDecl.name.text
-        var params: [Param] = []
-        
-        for param in funcDecl.signature.parameterClause.parameters
-        {
-            var paramName: String = ""
-
-            // A parameter's firstName is not optional but second one is
-            if param.secondName?.text != "_"
-            {
-                paramName = param.secondName?.text ?? ""
-            }
-            else
-            {
-                paramName = param.firstName.text
-            }
-            
-            let typeDesc = String(describing: type(of: param))
-            let required = param.defaultValue == nil
-            params.append((paramName, typeDesc, required))
-        }
-        
-        if funcDecl.body == nil
-        {
-            fatalError("@FuncTool could not find the body of the function \(name)")
-        }
-        
-        return[DeclSyntax(stringLiteral:
-            """
-            struct \(name) 
-            { 
-                let name = "\(name)" 
-                
-                func call\(funcDecl.signature)
-                \(funcDecl.body!.description)
-            }
-            """)]
-        
-        ////                \(funcDecl.description)
-
-//        return [DeclSyntax.init("let test = \"\(funcDecl.description)\"")]
-    }
-}
-
+/// Generates the `makeTool()` function call to reduce boilerplate of handing the function stub around to the other required macros
 public struct MakeToolMacro: ExpressionMacro
 {
     public static func expansion(of node: some FreestandingMacroExpansionSyntax, in context: some MacroExpansionContext) -> ExprSyntax
@@ -100,17 +35,30 @@ public struct MakeToolMacro: ExpressionMacro
             fatalError("#Tool: the macro does not have any arguments")
         }
         
-        // @TODO: Description
+        if (node.arguments.count > 2)
+        {
+            fatalError("#makeTool: Too many arguments. Expected 2 got \(node.arguments.count)")
+        }
+        
+        var usage = ExprSyntax("\"\"")
+        
+        if (node.arguments.count == 2 && node.arguments.last != nil)
+        {
+            usage = node.arguments.last!.expression
+        }
         
         return """
         makeTool(\(raw:argument.description), 
                  stringifiedFunc: #stringify(\(raw:argument.description)), 
                  internalExec: #callFuncWithIndexedParams(\(raw:argument.description)), 
-                 usage: "FINISH ME!")
+                 usage: \(raw: usage.description))
         """
     }
 }
 
+/// Generates an immediately executed closure which takes an arguments array in and calls the function by index
+///
+/// Note: This uses `.init(args[i]) ?? .init()` for each param to convert from string to the parameter type which could result in default initialization!
 public struct CallFuncWithIndexedParamsMacro: ExpressionMacro
 {
     public static func expansion(of node: some FreestandingMacroExpansionSyntax, in context: some MacroExpansionContext) -> ExprSyntax
@@ -140,8 +88,6 @@ public struct CallFuncWithIndexedParamsMacro: ExpressionMacro
             }
         }
 
-        // Still errors, compiler thinks its type '()' for some reason even hard coded... Meh.
-
         return """
         { 
             args in
@@ -157,9 +103,7 @@ struct FuncToolPlugin: CompilerPlugin
     let providingMacros: [Macro.Type] =
     [
         StringifyMacro.self,
-        CallToolMacro.self,
         CallFuncWithIndexedParamsMacro.self,
         MakeToolMacro.self,
-        FuncToolMacro.self,
     ]
 }

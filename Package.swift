@@ -1,6 +1,6 @@
 // swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
-
+// MIT License. Copyright Charles Jared Jetsel 2025
 import PackageDescription
 import CompilerPluginSupport
 
@@ -39,14 +39,5 @@ let package = Package(
 
         // A client of the library, which is able to use the macro in its own code.
         .executableTarget(name: "FuncToolClient", dependencies: ["FuncTool"]),
-
-        // A test target used to develop the macro implementation.
-        .testTarget(
-            name: "FuncToolTests",
-            dependencies: [
-                "FuncToolMacros",
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-            ]
-        ),
     ]
 )
